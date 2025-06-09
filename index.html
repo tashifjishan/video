@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PeerJS Video Call</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        flex-direction: column;
+      }
+      video {
+        width: 45%;
+        margin: 10px;
+        border: 1px solid #ccc;
+      }
+      button {
+        padding: 10px 20px;
+        margin-top: 10px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Your Peer ID: <span id="peerId"></span></h2>
+    <video id="localVideo" autoplay muted></video>
+    <video id="remoteVideo" autoplay></video>
+    <div>
+      <button id="callBtn">Call</button>
+      <button id="hangupBtn" disabled>Hang Up</button>
+    </div>
+
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+    <script>
+      const peer = new Peer();
+      const localVideo = document.getElementById("localVideo");
+      const remoteVideo = document.getElementById("remoteVideo");
+      const callBtn = document.getElementById("callBtn");
+      const hangupBtn = document.getElementById("hangupBtn");
+
+      let localStream;
+      let currentCall;
+
+      // Display the peer ID when open
+      peer.on("open", (id) => {
+        document.getElementById("peerId").textContent = id;
+      });
+
+      // Get user media (video and audio)
+      navigator.mediaDevices
+        .getUserMedia({ video: true, audio: true })
+        .then((stream) => {
+          localStream = stream;
+          localVideo.srcObject = stream;
+        })
+        .catch((err) => {
+          console.error("Failed to get local stream", err);
+        });
+
+      // Handle incoming calls
+      peer.on("call", (call) => {
+        const shouldAnswer = confirm("Do you want to answer the call?");
+        if (shouldAnswer) {
+          call.answer(localStream);
+          call.on("stream", (remoteStream) => {
+            remoteVideo.srcObject = remoteStream;
+          });
+          currentCall = call;
+          hangupBtn.disabled = false;
+        }
+      });
+
+      // Initiate a call
+      callBtn.addEventListener("click", () => {
+        const remotePeerId = prompt("Enter the peer ID to call:");
+        if (remotePeerId) {
+          const call = peer.call(remotePeerId, localStream);
+          call.on("stream", (remoteStream) => {
+            remoteVideo.srcObject = remoteStream;
+          });
+          currentCall = call;
+          hangupBtn.disabled = false;
+        }
+      });
+
+      // Hang up the call
+      hangupBtn.addEventListener("click", () => {
+        if (currentCall) {
+          currentCall.close();
+          remoteVideo.srcObject = null;
+          hangupBtn.disabled = true;
+        }
+      });
+    </script>
+  </body>
+</html>
