@@ -27,7 +27,8 @@
     </style>
   </head>
   <body>
-    <h2>Your Peer ID (SEND): <span id="peerId"></span></h2>
+    <h2>Your Peer ID (VIDEO): <span id="peerId"></span></h2>
+    <p id="status">Status: Loading</p>
     <video id="localVideo" autoplay muted></video>
     <video id="remoteVideo" autoplay></video>
     <div>
@@ -43,6 +44,7 @@
       const remoteVideo = document.getElementById("remoteVideo");
       const callBtn = document.getElementById("callBtn");
       const hangupBtn = document.getElementById("hangupBtn");
+      const status = document.getElementById("status");
 
       let localStream;
       let currentCall;
@@ -50,6 +52,7 @@
       // Display the peer ID when open
       peer.on("open", (id) => {
         document.getElementById("peerId").textContent = id;
+        status.innerText="";
       });
 
       // Get user media (video and audio)
@@ -68,8 +71,10 @@
         const shouldAnswer = confirm("Do you want to answer the call?");
         if (shouldAnswer) {
           call.answer(localStream);
+          status.innerText="Loading...";
           call.on("stream", (remoteStream) => {
             remoteVideo.srcObject = remoteStream;
+            status.innerText="";
           });
           currentCall = call;
           hangupBtn.disabled = false;
@@ -80,9 +85,11 @@
       callBtn.addEventListener("click", () => {
         const remotePeerId = prompt("Enter the peer ID to call:");
         if (remotePeerId) {
+          status.innerText="Loading...";
           const call = peer.call(remotePeerId, localStream);
           call.on("stream", (remoteStream) => {
             remoteVideo.srcObject = remoteStream;
+            status.innerText="";
           });
           currentCall = call;
           hangupBtn.disabled = false;
