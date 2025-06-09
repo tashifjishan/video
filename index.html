@@ -50,6 +50,7 @@
 
       remoteVideo.onplay =()=>{
         console.log("Stream is playing now!")
+        status.innerText = "Stream is playing now"
       }
 
       let localStream;
@@ -80,7 +81,7 @@
           status.innerText="Loading...";
           call.on("stream", (remoteStream) => { 
             remoteVideo.srcObject = remoteStream;
-            status.innerText="";
+            
           });
           currentCall = call;
           hangupBtn.disabled = false;
@@ -95,7 +96,7 @@
           const call = peer.call(remotePeerId, localStream);
           call.on("stream", (remoteStream) => {
             remoteVideo.srcObject = remoteStream;
-            status.innerText="";
+            
           });
           currentCall = call;
           hangupBtn.disabled = false;
